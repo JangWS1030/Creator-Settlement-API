@@ -1,0 +1,1672 @@
+<!doctype html>
+<html lang="ko">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Creator Settlement API Submission Console</title>
+    <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='14' fill='%232c5cc5'/%3E%3Cpath d='M19 20h26v6H19zm0 11h18v6H19zm0 11h26v6H19z' fill='white'/%3E%3C/svg%3E">
+    <style>
+        :root {
+            --bg: #f3f6fb;
+            --panel: #ffffff;
+            --panel-muted: #f8fafc;
+            --line: #d7dfeb;
+            --line-strong: #bcc8da;
+            --ink: #18212f;
+            --muted: #5a697d;
+            --primary: #2c5cc5;
+            --primary-deep: #1f4798;
+            --secondary: #127268;
+            --accent: #bf6b1a;
+            --danger: #c23b4a;
+            --success: #0e8c62;
+            --shadow: 0 16px 36px rgba(24, 33, 47, 0.08);
+            --radius: 16px;
+        }
+
+        * {
+            box-sizing: border-box;
+        }
+
+        body {
+            margin: 0;
+            min-height: 100vh;
+            background: var(--bg);
+            color: var(--ink);
+            font-family: "SUIT", "Pretendard", "Wanted Sans", "Noto Sans KR", sans-serif;
+        }
+
+        .app-shell {
+            width: min(1280px, calc(100% - 32px));
+            margin: 0 auto;
+            padding: 24px 0 40px;
+        }
+
+        .panel,
+        .card {
+            border: 1px solid var(--line);
+            border-radius: var(--radius);
+            background: var(--panel);
+            box-shadow: var(--shadow);
+        }
+
+        .topbar {
+            display: grid;
+            grid-template-columns: minmax(0, 1.1fr) minmax(360px, 0.9fr);
+            gap: 20px;
+            padding: 24px;
+            align-items: start;
+        }
+
+        .section-kicker {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            color: var(--primary-deep);
+            font-size: 12px;
+            font-weight: 800;
+            letter-spacing: 0.08em;
+            text-transform: uppercase;
+        }
+
+        .section-kicker::before {
+            content: "";
+            width: 8px;
+            height: 8px;
+            border-radius: 999px;
+            background: var(--primary);
+        }
+
+        h1 {
+            margin: 10px 0 0;
+            font-size: clamp(28px, 4vw, 42px);
+            line-height: 1.06;
+            letter-spacing: 0;
+        }
+
+        .headline-meta {
+            margin-top: 10px;
+            color: var(--muted);
+            font-size: 14px;
+            font-weight: 700;
+        }
+
+        .topbar-side {
+            display: grid;
+            gap: 12px;
+        }
+
+        .server-panel {
+            display: grid;
+            gap: 6px;
+            padding: 16px 18px;
+            border: 1px solid var(--line);
+            border-radius: 14px;
+            background: var(--panel-muted);
+        }
+
+        .server-label {
+            color: var(--muted);
+            font-size: 12px;
+            font-weight: 800;
+            letter-spacing: 0.08em;
+            text-transform: uppercase;
+        }
+
+        .server-value {
+            display: inline-flex;
+            align-items: center;
+            gap: 10px;
+            font-size: 24px;
+            font-weight: 900;
+        }
+
+        .server-value::before {
+            content: "";
+            width: 10px;
+            height: 10px;
+            border-radius: 999px;
+            background: var(--line-strong);
+        }
+
+        .server-value.online {
+            color: var(--success);
+        }
+
+        .server-value.online::before {
+            background: var(--success);
+        }
+
+        .server-value.offline {
+            color: var(--danger);
+        }
+
+        .server-value.offline::before {
+            background: var(--danger);
+        }
+
+        .quick-grid,
+        .metrics-grid,
+        .summary {
+            display: grid;
+            gap: 12px;
+        }
+
+        .quick-grid {
+            grid-template-columns: repeat(3, minmax(0, 1fr));
+        }
+
+        button {
+            width: 100%;
+            border: 0;
+            border-radius: 12px;
+            padding: 14px 16px;
+            font: inherit;
+            font-weight: 800;
+            cursor: pointer;
+            color: #fff;
+            background: var(--primary);
+            transition: background 0.18s ease, transform 0.18s ease, box-shadow 0.18s ease;
+            box-shadow: 0 10px 24px rgba(44, 92, 197, 0.2);
+        }
+
+        button:hover {
+            transform: translateY(-1px);
+            background: var(--primary-deep);
+        }
+
+        button.secondary {
+            background: var(--secondary);
+            box-shadow: 0 10px 24px rgba(18, 114, 104, 0.18);
+        }
+
+        button.secondary:hover {
+            background: #0c5d55;
+        }
+
+        button.clay {
+            background: var(--accent);
+            box-shadow: 0 10px 24px rgba(191, 107, 26, 0.2);
+        }
+
+        button.clay:hover {
+            background: #9f5812;
+        }
+
+        .metrics-grid {
+            margin-top: 16px;
+            grid-template-columns: repeat(4, minmax(0, 1fr));
+        }
+
+        .metric {
+            padding: 16px 18px;
+            border: 1px solid var(--line);
+            border-radius: 14px;
+            background: var(--panel);
+        }
+
+        .metric span {
+            display: block;
+            color: var(--muted);
+            font-size: 12px;
+            font-weight: 800;
+            letter-spacing: 0.04em;
+            text-transform: uppercase;
+        }
+
+        .metric strong {
+            display: block;
+            margin-top: 8px;
+            font-size: 28px;
+            line-height: 1;
+            letter-spacing: 0;
+        }
+
+        .workspace-stack {
+            display: grid;
+            gap: 16px;
+            margin-top: 16px;
+        }
+
+        .creator-hub {
+            display: grid;
+            gap: 16px;
+        }
+
+        .creator-hub-head {
+            display: flex;
+            align-items: start;
+            justify-content: space-between;
+            gap: 12px;
+        }
+
+        .card-note {
+            margin: 6px 0 0;
+            color: var(--muted);
+            font-size: 13px;
+            line-height: 1.5;
+        }
+
+        .creator-banner {
+            display: grid;
+            grid-template-columns: minmax(260px, 320px) minmax(0, 1fr);
+            gap: 16px;
+            align-items: start;
+        }
+
+        .creator-summary-panel {
+            display: grid;
+            gap: 12px;
+        }
+
+        .creator-identity {
+            padding: 16px;
+            border: 1px solid var(--line);
+            border-radius: 14px;
+            background: linear-gradient(135deg, rgba(44, 92, 197, 0.08), rgba(18, 114, 104, 0.08));
+        }
+
+        .creator-identity strong {
+            display: block;
+            font-size: 22px;
+            line-height: 1.2;
+        }
+
+        .creator-identity span {
+            display: block;
+            margin-top: 6px;
+            color: var(--muted);
+            font-size: 13px;
+            line-height: 1.5;
+        }
+
+        .creator-overview {
+            display: grid;
+            grid-template-columns: repeat(4, minmax(0, 1fr));
+            gap: 12px;
+        }
+
+        .overview-tile {
+            padding: 14px;
+            border: 1px solid var(--line);
+            border-radius: 14px;
+            background: var(--panel-muted);
+        }
+
+        .overview-tile span {
+            display: block;
+            color: var(--muted);
+            font-size: 12px;
+            font-weight: 800;
+        }
+
+        .overview-tile strong {
+            display: block;
+            margin-top: 8px;
+            font-size: 24px;
+            line-height: 1;
+        }
+
+        .selection-grid,
+        .action-grid {
+            display: grid;
+            gap: 16px;
+        }
+
+        .selection-grid {
+            grid-template-columns: minmax(0, 1fr) auto;
+            align-items: end;
+        }
+
+        .action-grid {
+            grid-template-columns: repeat(2, minmax(0, 1fr));
+        }
+
+        .action-grid .wide-panel {
+            grid-column: 1 / -1;
+        }
+
+        .card {
+            padding: 20px;
+        }
+
+        .card h2 {
+            margin: 0 0 14px;
+            font-size: 20px;
+            letter-spacing: 0;
+        }
+
+        .form-grid {
+            display: grid;
+            grid-template-columns: repeat(2, minmax(0, 1fr));
+            gap: 12px;
+        }
+
+        label {
+            display: grid;
+            gap: 6px;
+            color: var(--muted);
+            font-size: 12px;
+            font-weight: 800;
+            letter-spacing: 0.02em;
+        }
+
+        input,
+        select {
+            width: 100%;
+            min-width: 0;
+            border: 1px solid var(--line-strong);
+            border-radius: 12px;
+            background: var(--panel-muted);
+            color: var(--ink);
+            padding: 12px 13px;
+            font: inherit;
+            outline: none;
+        }
+
+        input:focus,
+        select:focus {
+            border-color: var(--primary);
+            box-shadow: 0 0 0 4px rgba(44, 92, 197, 0.12);
+        }
+
+        .span-2 {
+            grid-column: span 2;
+        }
+
+        .list {
+            display: grid;
+            gap: 10px;
+            margin-top: 14px;
+        }
+
+        .row {
+            display: grid;
+            grid-template-columns: minmax(0, 1fr) auto;
+            gap: 10px;
+            align-items: center;
+            padding: 12px 14px;
+            border: 1px solid var(--line);
+            border-radius: 14px;
+            background: var(--panel-muted);
+        }
+
+        .row-title {
+            font-weight: 900;
+        }
+
+        .row-sub {
+            margin-top: 4px;
+            color: var(--muted);
+            font-size: 13px;
+            line-height: 1.45;
+        }
+
+        .pill {
+            display: inline-flex;
+            align-items: center;
+            border-radius: 999px;
+            padding: 7px 10px;
+            background: rgba(44, 92, 197, 0.1);
+            color: var(--primary-deep);
+            font-size: 12px;
+            font-weight: 900;
+            white-space: nowrap;
+        }
+
+        .empty-row {
+            justify-content: center;
+            color: var(--muted);
+            font-size: 13px;
+            font-weight: 700;
+        }
+
+        .summary {
+            grid-template-columns: repeat(4, minmax(0, 1fr));
+            margin-top: 14px;
+        }
+
+        .output {
+            margin-top: 14px;
+            max-height: 320px;
+            overflow: auto;
+            border-radius: 14px;
+            background: #101722;
+            color: #eff4fb;
+            padding: 14px;
+            font-family: "Cascadia Code", "D2Coding", monospace;
+            font-size: 12px;
+            line-height: 1.55;
+            white-space: pre-wrap;
+        }
+
+        .output.error {
+            color: #ffd7de;
+        }
+
+        .section-label {
+            color: var(--muted);
+            font-size: 12px;
+            font-weight: 800;
+            text-transform: uppercase;
+            letter-spacing: 0.06em;
+        }
+
+        .scenario-grid {
+            display: grid;
+            gap: 12px;
+            margin-top: 14px;
+        }
+
+        .scenario-card {
+            display: grid;
+            gap: 12px;
+            padding: 14px;
+            border: 1px solid var(--line);
+            border-radius: 14px;
+            background: var(--panel-muted);
+        }
+
+        .scenario-head {
+            display: flex;
+            align-items: start;
+            justify-content: space-between;
+            gap: 12px;
+        }
+
+        .scenario-meta {
+            display: grid;
+            gap: 4px;
+        }
+
+        .scenario-meta strong {
+            font-size: 16px;
+            line-height: 1.2;
+        }
+
+        .scenario-meta span {
+            color: var(--muted);
+            font-size: 13px;
+            line-height: 1.45;
+        }
+
+        .scenario-actions {
+            display: flex;
+            gap: 8px;
+            align-items: center;
+        }
+
+        .scenario-actions button {
+            width: auto;
+            min-width: 112px;
+            padding-inline: 14px;
+        }
+
+        .scenario-notes {
+            display: grid;
+            gap: 4px;
+            color: var(--muted);
+            font-size: 13px;
+            line-height: 1.45;
+        }
+
+        .wide {
+            grid-column: 1 / -1;
+        }
+
+        @media (max-width: 980px) {
+            .topbar,
+            .summary,
+            .metrics-grid,
+            .creator-banner,
+            .creator-overview,
+            .selection-grid,
+            .action-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .creator-hub-head {
+                flex-direction: column;
+            }
+        }
+
+        @media (max-width: 720px) {
+            .quick-grid,
+            .form-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .scenario-head,
+            .scenario-actions {
+                flex-direction: column;
+                align-items: stretch;
+            }
+
+            .span-2 {
+                grid-column: auto;
+            }
+
+            .app-shell {
+                width: min(100% - 20px, 1280px);
+                padding: 16px 0 24px;
+            }
+
+            .topbar,
+            .card {
+                padding: 16px;
+            }
+        }
+    </style>
+</head>
+<body>
+<main class="app-shell">
+    <header class="topbar panel">
+        <div>
+            <div class="section-kicker">Creator Settlement API</div>
+            <h1>과제 제출 콘솔</h1>
+            <div class="headline-meta">자동 시드 데이터와 API 응답을 바로 확인</div>
+        </div>
+        <div class="topbar-side">
+            <div class="server-panel">
+                <div class="server-label">Server</div>
+                <div class="server-value" id="serverStatus">확인 중</div>
+            </div>
+            <div class="quick-grid">
+                <button type="button" data-demo="sales" data-target="querySection">판매 조회</button>
+                <button class="secondary" type="button" data-demo="monthly" data-target="monthlySection">월 정산</button>
+                <button class="clay" type="button" data-demo="admin" data-target="querySection">운영 집계</button>
+            </div>
+        </div>
+    </header>
+
+    <section class="metrics-grid" id="catalogMetrics"></section>
+
+    <section class="workspace-stack">
+        <article class="card creator-hub">
+            <div class="creator-hub-head">
+                <div>
+                    <h2>강사 선택</h2>
+                    <p class="card-note">강사를 선택하면 아래 등록, 정산, 조회 기능이 모두 같은 강사 기준으로 맞춰집니다.</p>
+                </div>
+                <button class="secondary" type="button" id="refreshCatalog">목록 새로고침</button>
+            </div>
+            <div class="creator-banner">
+                <div class="selection-grid">
+                    <label>
+                        크리에이터
+                        <select id="creatorSelect"></select>
+                    </label>
+                    <button class="clay" type="button" id="applySaleToCancel">선택 판매를 취소 폼에 반영</button>
+                </div>
+                <div class="creator-summary-panel">
+                    <div class="creator-identity" id="creatorIdentity"></div>
+                    <div class="creator-overview" id="creatorOverview"></div>
+                </div>
+            </div>
+            <div class="form-grid">
+                <label>
+                    강의
+                    <select id="courseSelect"></select>
+                </label>
+                <label>
+                    판매 선택
+                    <select id="saleSelect"></select>
+                </label>
+            </div>
+            <div>
+                <div class="section-label">선택한 강사 강의 현황</div>
+                <div class="list" id="catalogList"></div>
+            </div>
+        </article>
+
+        <section class="action-grid">
+            <article class="card" id="saleSection">
+                <h2>판매 등록</h2>
+                <p class="card-note">현재 선택된 강사의 강의로 판매를 바로 등록합니다.</p>
+                <form class="form-grid" id="saleForm">
+                    <label>
+                        판매 ID
+                        <input name="id" value="sale-extra-1" required>
+                    </label>
+                    <label>
+                        학생 ID
+                        <input name="studentId" value="student-99" required>
+                    </label>
+                    <label>
+                        금액
+                        <input name="amount" type="number" min="1" value="70000" required>
+                    </label>
+                    <label>
+                        결제 일시
+                        <input name="paidAt" placeholder="현재 시간이 자동 입력됩니다" required>
+                    </label>
+                    <button class="span-2" type="submit">판매 등록</button>
+                </form>
+                <pre class="output" id="saleOutput">POST /api/sales 결과가 여기에 표시됩니다.</pre>
+            </article>
+
+            <article class="card" id="cancelSection">
+                <h2>취소 등록</h2>
+                <p class="card-note">판매 조회 결과에서 선택한 판매 ID를 바로 취소 폼에 넣을 수 있습니다.</p>
+                <form class="form-grid" id="cancelForm">
+                    <label>
+                        판매 ID
+                        <input name="saleId" value="sale-extra-1" required>
+                    </label>
+                    <label>
+                        취소 ID
+                        <input name="id" value="cancel-extra-1" required>
+                    </label>
+                    <label>
+                        환불 금액
+                        <input name="refundAmount" type="number" min="1" value="10000" required>
+                    </label>
+                    <label>
+                        취소 일시
+                        <input name="cancelledAt" placeholder="현재 시간이 자동 입력됩니다" required>
+                    </label>
+                    <button class="clay span-2" type="submit">취소 등록</button>
+                </form>
+                <pre class="output" id="cancelOutput">POST /api/sales/{saleId}/cancellations 결과가 여기에 표시됩니다.</pre>
+            </article>
+
+            <article class="card" id="monthlySection">
+                <h2>월별 정산</h2>
+                <p class="card-note">연월만 선택하면 현재 선택된 강사의 월 정산을 조회합니다.</p>
+                <form class="form-grid" id="monthlyForm">
+                    <label class="span-2">
+                        정산 월
+                        <input name="yearMonth" type="month" value="2025-03" required>
+                    </label>
+                    <button class="secondary span-2" type="submit">월 정산 조회</button>
+                </form>
+                <div class="summary" id="monthlySummary"></div>
+                <pre class="output" id="monthlyOutput">GET /api/settlements/monthly 결과가 여기에 표시됩니다.</pre>
+            </article>
+
+            <article class="card" id="querySection">
+                <h2>판매 조회 / 운영자 집계</h2>
+                <p class="card-note">연월을 고르면 해당 월의 1일부터 말일까지 기준으로 판매 조회와 운영자 집계를 확인합니다.</p>
+                <div class="form-grid">
+                    <label class="span-2">
+                        조회 연월
+                        <input id="salesYearMonth" type="month" value="2025-03">
+                    </label>
+                    <input id="salesFromDate" type="hidden" value="2025-03-01">
+                    <input id="salesToDate" type="hidden" value="2025-03-31">
+                    <button type="button" id="loadSales">선택 강사 판매 조회</button>
+                    <button class="secondary" type="button" id="loadAdmin">운영자 집계 조회</button>
+                </div>
+                <div class="summary" id="adminSummary"></div>
+                <div class="list" id="salesList"></div>
+                <pre class="output" id="queryOutput">조회 결과가 여기에 표시됩니다.</pre>
+            </article>
+        </section>
+
+        <article class="card" id="scenarioSection">
+            <h2>테스트 시나리오</h2>
+            <p class="card-note">버튼 한 번으로 시나리오 데이터를 생성 또는 재사용하고, 결과와 확인 SQL을 같이 봅니다.</p>
+            <div class="scenario-grid" id="scenarioList"></div>
+            <pre class="output" id="scenarioOutput">시나리오 실행 결과와 SQL 확인 문구가 여기에 표시됩니다.</pre>
+        </article>
+    </section>
+</main>
+
+<script>
+    const state = {
+        creators: [],
+        courses: [],
+        sales: [],
+        allSales: []
+    };
+
+    const money = new Intl.NumberFormat("ko-KR");
+    const $ = (selector) => document.querySelector(selector);
+    const scenarioDefinitions = [
+        {
+            id: "TC-01",
+            title: "누적 부분 환불",
+            purpose: "환불 합계와 남은 금액, 순매출 반영이 맞는지 검증합니다.",
+            expected: "환불 50000원 / 순매출 50000원 / 수수료 10000원 / 정산 40000원",
+            context: {
+                creatorId: "creator-6",
+                courseId: "course-9",
+                yearMonth: "2025-09",
+                queryYearMonth: "2025-09",
+                fromDate: "2025-09-01",
+                toDate: "2025-09-30"
+            }
+        },
+        {
+            id: "TC-02",
+            title: "당월 순매출 음수",
+            purpose: "환불만 있는 달에서 음수 정산값이 어떻게 처리되는지 확인합니다.",
+            expected: "0원 보정 없이 음수 결과를 그대로 유지",
+            context: {
+                creatorId: "creator-6",
+                courseId: "course-9",
+                yearMonth: "2025-11",
+                queryYearMonth: "2025-11",
+                fromDate: "2025-11-01",
+                toDate: "2025-11-30"
+            }
+        },
+        {
+            id: "TC-03",
+            title: "지급 완료 후 취소",
+            purpose: "지급 완료 월은 고정되고 다음 달 정산에 차감이 반영되는지 봅니다.",
+            expected: "2025-03 지급 완료 유지 / 2025-04 초안 정산에 차감 반영",
+            context: {
+                creatorId: "creator-4",
+                courseId: "course-5",
+                yearMonth: "2025-04",
+                queryYearMonth: "2025-04",
+                fromDate: "2025-04-01",
+                toDate: "2025-04-30"
+            }
+        },
+        {
+            id: "TC-04",
+            title: "수수료율 변경 소급",
+            purpose: "환불 수수료가 환불월이 아니라 판매 시점 수수료율을 따르는지 검증합니다.",
+            expected: "4월 수수료율 30%와 무관하게 판매 시점 10% 기준으로 계산",
+            context: {
+                creatorId: "creator-5",
+                courseId: "course-7",
+                yearMonth: "2025-04",
+                queryYearMonth: "2025-04",
+                fromDate: "2025-04-01",
+                toDate: "2025-04-30"
+            }
+        },
+        {
+            id: "TC-05",
+            title: "밀리초 월 경계",
+            purpose: "KST 기준 23:59:59.999와 00:00:00.000이 다른 월로 분리되는지 확인합니다.",
+            expected: "8월은 첫 판매만 포함 / 9월은 두 번째 판매만 포함",
+            context: {
+                creatorId: "creator-4",
+                courseId: "course-5",
+                yearMonth: "2025-09",
+                queryYearMonth: "2025-09",
+                fromDate: "2025-08-01",
+                toDate: "2025-09-30"
+            }
+        }
+    ];
+    const scenarioSqlSnippets = {
+        "TC-01": `-- TC-01 누적 부분 환불
+SELECT id, amount, paid_at FROM sale_records WHERE id = 'sale-tc01-ui';
+SELECT id, refund_amount, cancelled_at FROM cancellation_records WHERE sale_record_id = 'sale-tc01-ui' ORDER BY cancelled_at;
+SELECT * FROM vw_sale_audit WHERE sale_id = 'sale-tc01-ui';
+SELECT * FROM vw_creator_monthly_settlement_base WHERE creator_id = 'creator-6' AND settlement_month = '2025-09';`,
+        "TC-02": `-- TC-02 당월 순매출 음수
+SELECT id, amount, paid_at FROM sale_records WHERE id = 'sale-tc02-ui';
+SELECT id, refund_amount, cancelled_at FROM cancellation_records WHERE sale_record_id = 'sale-tc02-ui';
+SELECT * FROM vw_creator_monthly_settlement_base WHERE creator_id = 'creator-6' AND settlement_month = '2025-11';`,
+        "TC-03": `-- TC-03 지급 완료 후 취소
+SELECT id, status, total_sale_amount, refund_amount, scheduled_settlement_amount, paid_at
+FROM settlements
+WHERE id = 'settlement-creator-4-2025-03';
+SELECT id, refund_amount, cancelled_at FROM cancellation_records WHERE sale_record_id = 'sale-tc03-ui';
+SELECT * FROM vw_creator_monthly_settlement_base
+WHERE creator_id = 'creator-4' AND settlement_month IN ('2025-03', '2025-04')
+ORDER BY settlement_month;`,
+        "TC-04": `-- TC-04 수수료율 변경 소급
+SELECT effective_from, fee_rate_percentage FROM fee_rate_histories ORDER BY effective_from;
+SELECT id, amount, paid_at FROM sale_records WHERE id = 'sale-tc04-ui';
+SELECT id, refund_amount, cancelled_at FROM cancellation_records WHERE sale_record_id = 'sale-tc04-ui';
+SELECT * FROM vw_creator_monthly_settlement_base WHERE creator_id = 'creator-5' AND settlement_month = '2025-04';`,
+        "TC-05": `-- TC-05 밀리초 월 경계
+SELECT id, paid_at FROM sale_records WHERE id IN ('sale-tc05-ui-1', 'sale-tc05-ui-2') ORDER BY paid_at;
+SELECT * FROM vw_sale_audit WHERE sale_id IN ('sale-tc05-ui-1', 'sale-tc05-ui-2') ORDER BY paid_at;
+SELECT * FROM vw_creator_monthly_settlement_base
+WHERE creator_id = 'creator-4' AND settlement_month IN ('2025-08', '2025-09')
+ORDER BY settlement_month;`
+    };
+
+    function pretty(data) {
+        return JSON.stringify(data, null, 2);
+    }
+
+    function formValue(form, name) {
+        const value = new FormData(form).get(name);
+        return value == null ? "" : value.toString().trim();
+    }
+
+    function pad(value) {
+        return String(value).padStart(2, "0");
+    }
+
+    function currentOffsetDateTime() {
+        const now = new Date();
+        const offsetMinutes = -now.getTimezoneOffset();
+        const sign = offsetMinutes >= 0 ? "+" : "-";
+        const absOffset = Math.abs(offsetMinutes);
+        const offset = `${sign}${pad(Math.floor(absOffset / 60))}:${pad(absOffset % 60)}`;
+
+        return `${now.getFullYear()}-${pad(now.getMonth() + 1)}-${pad(now.getDate())}`
+                + `T${pad(now.getHours())}:${pad(now.getMinutes())}:${pad(now.getSeconds())}${offset}`;
+    }
+
+    function monthRange(yearMonth) {
+        if (!/^\d{4}-\d{2}$/.test(yearMonth)) {
+            return { startDate: "", endDate: "" };
+        }
+
+        const [year, month] = yearMonth.split("-").map(Number);
+        const lastDate = new Date(year, month, 0);
+        return {
+            startDate: `${yearMonth}-01`,
+            endDate: `${yearMonth}-${pad(lastDate.getDate())}`
+        };
+    }
+
+    function yearMonthOf(dateText) {
+        return /^\d{4}-\d{2}-\d{2}$/.test(dateText) ? dateText.slice(0, 7) : "";
+    }
+
+    function setSalesMonth(yearMonth) {
+        if (!yearMonth) {
+            return;
+        }
+
+        $("#salesYearMonth").value = yearMonth;
+        const { startDate, endDate } = monthRange(yearMonth);
+        $("#salesFromDate").value = startDate;
+        $("#salesToDate").value = endDate;
+    }
+
+    function maxNumericSuffix(ids, prefix) {
+        const pattern = new RegExp(`^${prefix}-(\\d+)$`);
+        return ids
+                .map((id) => id.match(pattern))
+                .filter(Boolean)
+                .map((match) => Number(match[1]))
+                .reduce((max, value) => Math.max(max, value), 0);
+    }
+
+    function nextSaleId() {
+        return `sale-${maxNumericSuffix(state.allSales.map((sale) => sale.id), "sale") + 1}`;
+    }
+
+    function nextCancellationId() {
+        const cancellationIds = state.allSales.flatMap((sale) => sale.cancellations.map((cancellation) => cancellation.id));
+        return `cancel-${maxNumericSuffix(cancellationIds, "cancel") + 1}`;
+    }
+
+    function resetIds() {
+        $("#saleForm [name='id']").value = nextSaleId();
+        $("#cancelForm [name='id']").value = nextCancellationId();
+    }
+
+    function resetCurrentTimes() {
+        const now = currentOffsetDateTime();
+        $("#saleForm [name='paidAt']").value = now;
+        $("#cancelForm [name='cancelledAt']").value = now;
+    }
+
+    function updateServerStatus(text, variant) {
+        const status = $("#serverStatus");
+        status.textContent = text;
+        status.classList.remove("online", "offline");
+        if (variant) {
+            status.classList.add(variant);
+        }
+    }
+
+    async function request(path, options = {}) {
+        const response = await fetch(path, {
+            headers: {
+                "Content-Type": "application/json",
+                ...(options.headers || {})
+            },
+            ...options
+        });
+        const text = await response.text();
+        const body = text ? JSON.parse(text) : null;
+
+        if (!response.ok) {
+            const error = new Error(body?.message || response.statusText);
+            error.body = body;
+            error.status = response.status;
+            throw error;
+        }
+
+        return body;
+    }
+
+    function writeOutput(target, data, isError = false) {
+        target.textContent = typeof data === "string" ? data : pretty(data);
+        target.classList.toggle("error", isError);
+    }
+
+    function monetaryMetric(label, value) {
+        const item = document.createElement("div");
+        item.className = "metric";
+        const title = document.createElement("span");
+        title.textContent = label;
+        const number = document.createElement("strong");
+        number.textContent = typeof value === "number" ? `${money.format(value)}원` : value;
+        item.append(title, number);
+        return item;
+    }
+
+    function countMetric(label, value, suffix) {
+        const item = document.createElement("div");
+        item.className = "metric";
+        const title = document.createElement("span");
+        title.textContent = label;
+        const number = document.createElement("strong");
+        number.textContent = `${money.format(value)}${suffix}`;
+        item.append(title, number);
+        return item;
+    }
+
+    function renderSummary(target, items) {
+        target.replaceChildren(...items.map(([label, value]) => monetaryMetric(label, value)));
+    }
+
+    function settlementIdOf(creatorId, yearMonth) {
+        return `settlement-${creatorId}-${yearMonth}`;
+    }
+
+    function currentCreatorId() {
+        return $("#creatorSelect").value || state.creators[0]?.id || "";
+    }
+
+    function applyScenarioContext(context) {
+        if (!context || state.creators.length === 0) {
+            return;
+        }
+
+        renderCatalog(context.creatorId);
+        $("#creatorSelect").value = context.creatorId;
+        if (context.courseId && [...$("#courseSelect").options].some((option) => option.value === context.courseId)) {
+            $("#courseSelect").value = context.courseId;
+        }
+        if (context.yearMonth) {
+            $("#monthlyForm [name='yearMonth']").value = context.yearMonth;
+        }
+        setSalesMonth(context.queryYearMonth || context.yearMonth || yearMonthOf(context.toDate) || yearMonthOf(context.fromDate));
+    }
+
+    async function requestStep(label, path, options = {}, allowedStatuses = []) {
+        try {
+            return {
+                label,
+                status: "applied",
+                body: await request(path, options)
+            };
+        } catch (error) {
+            if (allowedStatuses.includes(error.status)) {
+                return {
+                    label,
+                    status: "kept",
+                    body: error.body || { message: error.message },
+                    code: error.status
+                };
+            }
+            throw error;
+        }
+    }
+
+    async function ensureSale(id, courseId, amount, paidAt) {
+        return requestStep(
+                `sale ${id}`,
+                "/api/sales",
+                {
+                    method: "POST",
+                    body: JSON.stringify({
+                        id,
+                        courseId,
+                        studentId: `scenario-student-${id}`,
+                        amount,
+                        paidAt
+                    })
+                },
+                [409]
+        );
+    }
+
+    async function ensureCancellation(saleId, id, refundAmount, cancelledAt) {
+        return requestStep(
+                `cancellation ${id}`,
+                `/api/sales/${encodeURIComponent(saleId)}/cancellations`,
+                {
+                    method: "POST",
+                    body: JSON.stringify({
+                        id,
+                        refundAmount,
+                        cancelledAt
+                    })
+                },
+                [409]
+        );
+    }
+
+    async function ensureFeeRate(effectiveFrom, feeRatePercentage) {
+        return requestStep(
+                `fee-rate ${effectiveFrom}`,
+                "/api/admin/fee-rates",
+                {
+                    method: "POST",
+                    body: JSON.stringify({
+                        effectiveFrom,
+                        feeRatePercentage
+                    })
+                },
+                [409]
+        );
+    }
+
+    async function ensureSettlement(creatorId, yearMonth) {
+        const settlementId = settlementIdOf(creatorId, yearMonth);
+        const step = await requestStep(
+                `settlement ${settlementId}`,
+                "/api/settlements",
+                {
+                    method: "POST",
+                    body: JSON.stringify({
+                        creatorId,
+                        yearMonth
+                    })
+                },
+                [409]
+        );
+
+        if (step.status === "kept") {
+            step.body = await request(`/api/settlements/${encodeURIComponent(settlementId)}`);
+        }
+
+        return step;
+    }
+
+    async function ensureConfirmed(settlementId) {
+        const step = await requestStep(
+                `confirm ${settlementId}`,
+                `/api/settlements/${encodeURIComponent(settlementId)}/confirm`,
+                { method: "PATCH" },
+                [400]
+        );
+
+        if (step.status === "kept") {
+            step.body = await request(`/api/settlements/${encodeURIComponent(settlementId)}`);
+        }
+
+        return step;
+    }
+
+    async function ensurePaid(settlementId) {
+        const step = await requestStep(
+                `pay ${settlementId}`,
+                `/api/settlements/${encodeURIComponent(settlementId)}/pay`,
+                { method: "PATCH" },
+                [400]
+        );
+
+        if (step.status === "kept") {
+            step.body = await request(`/api/settlements/${encodeURIComponent(settlementId)}`);
+        }
+
+        return step;
+    }
+
+    async function fetchMonthlyResult(creatorId, yearMonth) {
+        return request(`/api/settlements/monthly?creatorId=${encodeURIComponent(creatorId)}&yearMonth=${encodeURIComponent(yearMonth)}`);
+    }
+
+    async function fetchSalesResult(creatorId, fromDate, toDate) {
+        const params = new URLSearchParams({ creatorId, fromDate, toDate });
+        return request(`/api/sales?${params}`);
+    }
+
+    async function fetchAdminResult(startDate, endDate) {
+        return request(`/api/admin/settlements?startDate=${encodeURIComponent(startDate)}&endDate=${encodeURIComponent(endDate)}`);
+    }
+
+    async function runScenario(definition) {
+        try {
+            writeOutput($("#scenarioOutput"), `${definition.id} 실행 중...`);
+            const steps = [];
+            let queries = {};
+
+            if (definition.id === "TC-01") {
+                steps.push(await ensureSale("sale-tc01-ui", "course-9", 100000, "2025-09-10T10:00:00+09:00"));
+                steps.push(await ensureCancellation("sale-tc01-ui", "cancel-tc01-ui-1", 30000, "2025-09-11T09:00:00+09:00"));
+                steps.push(await ensureCancellation("sale-tc01-ui", "cancel-tc01-ui-2", 20000, "2025-09-12T09:00:00+09:00"));
+                queries = {
+                    monthly: await fetchMonthlyResult("creator-6", "2025-09"),
+                    sales: await fetchSalesResult("creator-6", "2025-09-01", "2025-09-30")
+                };
+            }
+
+            if (definition.id === "TC-02") {
+                steps.push(await ensureSale("sale-tc02-ui", "course-9", 50000, "2025-10-15T09:00:00+09:00"));
+                steps.push(await ensureCancellation("sale-tc02-ui", "cancel-tc02-ui-1", 50000, "2025-11-03T10:00:00+09:00"));
+                queries = {
+                    monthly: await fetchMonthlyResult("creator-6", "2025-11"),
+                    sales: await fetchSalesResult("creator-6", "2025-11-01", "2025-11-30")
+                };
+            }
+
+            if (definition.id === "TC-03") {
+                const settlementId = settlementIdOf("creator-4", "2025-03");
+                steps.push(await ensureSale("sale-tc03-ui", "course-5", 120000, "2025-03-20T13:00:00+09:00"));
+                steps.push(await ensureSettlement("creator-4", "2025-03"));
+                steps.push(await ensureConfirmed(settlementId));
+                steps.push(await ensurePaid(settlementId));
+                steps.push(await ensureCancellation("sale-tc03-ui", "cancel-tc03-ui-1", 50000, "2025-04-02T09:00:00+09:00"));
+                queries = {
+                    marchSettlement: await request(`/api/settlements/${encodeURIComponent(settlementId)}`),
+                    aprilMonthly: await fetchMonthlyResult("creator-4", "2025-04"),
+                    aprilSales: await fetchSalesResult("creator-4", "2025-04-01", "2025-04-30")
+                };
+            }
+
+            if (definition.id === "TC-04") {
+                steps.push(await ensureFeeRate("2025-01-01", 10));
+                steps.push(await ensureFeeRate("2025-04-01", 30));
+                steps.push(await ensureSale("sale-tc04-ui", "course-7", 9000, "2025-03-10T09:00:00+09:00"));
+                steps.push(await ensureCancellation("sale-tc04-ui", "cancel-tc04-ui-1", 9000, "2025-04-05T10:00:00+09:00"));
+                queries = {
+                    monthly: await fetchMonthlyResult("creator-5", "2025-04"),
+                    admin: await fetchAdminResult("2025-04-01", "2025-04-30")
+                };
+            }
+
+            if (definition.id === "TC-05") {
+                steps.push(await ensureSale("sale-tc05-ui-1", "course-5", 10000, "2025-08-31T23:59:59.999+09:00"));
+                steps.push(await ensureSale("sale-tc05-ui-2", "course-5", 20000, "2025-09-01T00:00:00.000+09:00"));
+                queries = {
+                    augustMonthly: await fetchMonthlyResult("creator-4", "2025-08"),
+                    septemberMonthly: await fetchMonthlyResult("creator-4", "2025-09"),
+                    sales: await fetchSalesResult("creator-4", "2025-08-01", "2025-09-30")
+                };
+            }
+
+            await loadCatalog();
+            applyScenarioContext(definition.context);
+            await loadSales();
+            await loadMonthly();
+
+            writeOutput($("#scenarioOutput"), {
+                id: definition.id,
+                title: definition.title,
+                purpose: definition.purpose,
+                expected: definition.expected,
+                steps,
+                queries,
+                sql: scenarioSqlSnippets[definition.id]
+            });
+        } catch (error) {
+            writeOutput($("#scenarioOutput"), error.body || error.message, true);
+        }
+    }
+
+    function showScenarioSql(definition) {
+        writeOutput($("#scenarioOutput"), {
+            id: definition.id,
+            title: definition.title,
+            purpose: definition.purpose,
+            expected: definition.expected,
+            sql: scenarioSqlSnippets[definition.id]
+        });
+    }
+
+    function renderScenarioList() {
+        const items = scenarioDefinitions.map((definition) => {
+            const creatorName = state.creators.find((creator) => creator.id === definition.context.creatorId)?.name || definition.context.creatorId;
+            const card = document.createElement("div");
+            card.className = "scenario-card";
+
+            const head = document.createElement("div");
+            head.className = "scenario-head";
+
+            const meta = document.createElement("div");
+            meta.className = "scenario-meta";
+            const title = document.createElement("strong");
+            title.textContent = `${definition.id} / ${definition.title}`;
+            const purpose = document.createElement("span");
+            purpose.textContent = definition.purpose;
+            meta.append(title, purpose);
+
+            const actions = document.createElement("div");
+            actions.className = "scenario-actions";
+            const runButton = document.createElement("button");
+            runButton.type = "button";
+            runButton.className = "secondary";
+            runButton.textContent = "실행";
+            runButton.addEventListener("click", () => runScenario(definition));
+            const sqlButton = document.createElement("button");
+            sqlButton.type = "button";
+            sqlButton.className = "clay";
+            sqlButton.textContent = "SQL";
+            sqlButton.addEventListener("click", () => showScenarioSql(definition));
+            actions.append(runButton, sqlButton);
+
+            head.append(meta, actions);
+
+            const notes = document.createElement("div");
+            notes.className = "scenario-notes";
+            const expected = document.createElement("div");
+            expected.textContent = `기대 결과: ${definition.expected}`;
+            const context = document.createElement("div");
+            context.textContent = `대상 강사: ${creatorName} / 기준 월: ${definition.context.yearMonth}`;
+            notes.append(expected, context);
+
+            card.append(head, notes);
+            return card;
+        });
+
+        $("#scenarioList").replaceChildren(...items);
+    }
+
+    function countAllCancellations() {
+        return state.allSales.reduce((sum, sale) => sum + sale.cancellations.length, 0);
+    }
+
+    function overviewTile(label, value) {
+        const tile = document.createElement("div");
+        tile.className = "overview-tile";
+        const title = document.createElement("span");
+        title.textContent = label;
+        const amount = document.createElement("strong");
+        amount.textContent = value;
+        tile.append(title, amount);
+        return tile;
+    }
+
+    function renderCreatorOverview(creator, courses, creatorSales) {
+        if (!creator) {
+            $("#creatorIdentity").replaceChildren();
+            $("#creatorOverview").replaceChildren();
+            return;
+        }
+
+        const cancellationCount = creatorSales.reduce((sum, sale) => sum + sale.cancellations.length, 0);
+        const totalSaleAmount = creatorSales.reduce((sum, sale) => sum + sale.amount, 0);
+        const totalRemainingAmount = creatorSales.reduce((sum, sale) => sum + sale.remainingAmount, 0);
+
+        const title = document.createElement("strong");
+        title.textContent = `${creator.name} 작업 공간`;
+        const sub = document.createElement("span");
+        sub.textContent = `${creator.id} 기준으로 판매 등록, 취소 등록, 월 정산, 판매 조회를 이어서 확인할 수 있습니다.`;
+        $("#creatorIdentity").replaceChildren(title, sub);
+
+        $("#creatorOverview").replaceChildren(
+                overviewTile("강의 수", `${courses.length}개`),
+                overviewTile("판매 수", `${creatorSales.length}건`),
+                overviewTile("취소 수", `${cancellationCount}건`),
+                overviewTile("잔액 합계", `${money.format(totalRemainingAmount)}원`)
+        );
+
+        $("#creatorIdentity").append(
+                Object.assign(document.createElement("span"), {
+                    textContent: `누적 판매 ${money.format(totalSaleAmount)}원 / 남은 금액 ${money.format(totalRemainingAmount)}원`
+                })
+        );
+    }
+
+    function renderDatasetMetrics() {
+        const metrics = [
+            countMetric("크리에이터", state.creators.length, "명"),
+            countMetric("강의", state.courses.length, "개"),
+            countMetric("판매", state.allSales.length, "건"),
+            countMetric("취소", countAllCancellations(), "건")
+        ];
+        $("#catalogMetrics").replaceChildren(...metrics);
+    }
+
+    function setSelectPlaceholder(select, text) {
+        const option = document.createElement("option");
+        option.value = "";
+        option.textContent = text;
+        option.disabled = true;
+        option.selected = true;
+        select.replaceChildren(option);
+        select.disabled = true;
+    }
+
+    function creatorOption(creator) {
+        const option = document.createElement("option");
+        option.value = creator.id;
+        option.textContent = `${creator.name} (${creator.id})`;
+        return option;
+    }
+
+    function emptyRow(message) {
+        const row = document.createElement("div");
+        row.className = "row empty-row";
+        row.textContent = message;
+        return row;
+    }
+
+    function renderCatalog(preferredCreatorId = $("#creatorSelect").value) {
+        const creatorSelect = $("#creatorSelect");
+        const courseSelect = $("#courseSelect");
+
+        creatorSelect.disabled = false;
+        creatorSelect.replaceChildren(...state.creators.map(creatorOption));
+
+        if (state.creators.some((creator) => creator.id === preferredCreatorId)) {
+            creatorSelect.value = preferredCreatorId;
+        }
+
+        const selectedCreatorId = creatorSelect.value || state.creators[0]?.id;
+        const selectedCreator = state.creators.find((creator) => creator.id === selectedCreatorId);
+        const courses = state.courses.filter((course) => course.creatorId === selectedCreatorId);
+        const creatorSales = state.allSales.filter((sale) => sale.creatorId === selectedCreatorId);
+
+        if (courses.length === 0) {
+            setSelectPlaceholder(courseSelect, "강의 없음");
+        } else {
+            courseSelect.disabled = false;
+            courseSelect.replaceChildren(...courses.map((course) => {
+                const option = document.createElement("option");
+                option.value = course.id;
+                option.textContent = `${course.title} (${course.id})`;
+                return option;
+            }));
+        }
+
+        renderCreatorOverview(selectedCreator, courses, creatorSales);
+
+        const listRows = courses.length === 0 ? [emptyRow("선택한 강사에 등록된 강의가 없습니다.")] : courses.map((course) => {
+            const courseSales = creatorSales.filter((sale) => sale.courseId === course.id);
+            const cancellationCount = courseSales.reduce((sum, sale) => sum + sale.cancellations.length, 0);
+            const totalSaleAmount = courseSales.reduce((sum, sale) => sum + sale.amount, 0);
+            const totalRemainingAmount = courseSales.reduce((sum, sale) => sum + sale.remainingAmount, 0);
+            const row = document.createElement("div");
+            row.className = "row";
+            const text = document.createElement("div");
+            const title = document.createElement("div");
+            title.className = "row-title";
+            title.textContent = course.title;
+            const sub = document.createElement("div");
+            sub.className = "row-sub";
+            sub.textContent = `${course.id} / 판매 ${courseSales.length}건 / 취소 ${cancellationCount}건 / 누적 판매 ${money.format(totalSaleAmount)}원`;
+            text.append(title, sub);
+            const pill = document.createElement("div");
+            pill.className = "pill";
+            pill.textContent = courseSales.length > 0 ? `잔액 ${money.format(totalRemainingAmount)}원` : "판매 없음";
+            row.append(text, pill);
+            return row;
+        });
+
+        $("#catalogList").replaceChildren(...listRows);
+        renderDatasetMetrics();
+        renderScenarioList();
+    }
+
+    function renderSaleSelect() {
+        const saleSelect = $("#saleSelect");
+
+        if (state.sales.length === 0) {
+            setSelectPlaceholder(saleSelect, "판매 조회 결과 없음");
+            $("#applySaleToCancel").disabled = true;
+            $("#cancelForm [name='saleId']").value = "";
+            return;
+        }
+
+        saleSelect.disabled = false;
+        saleSelect.replaceChildren(...state.sales.map((sale) => {
+            const option = document.createElement("option");
+            option.value = sale.id;
+            option.textContent = `${sale.id} · ${sale.courseTitle} · 잔액 ${money.format(sale.remainingAmount)}원`;
+            return option;
+        }));
+        $("#applySaleToCancel").disabled = false;
+        $("#cancelForm [name='saleId']").value = saleSelect.value;
+    }
+
+    async function refreshAllSalesForIds() {
+        const responses = await Promise.all(state.creators.map((creator) => request(`/api/sales?creatorId=${encodeURIComponent(creator.id)}`)));
+        state.allSales = responses.flatMap((response) => {
+            return response.items.map((item) => ({
+                ...item,
+                creatorId: response.creatorId
+            }));
+        });
+    }
+
+    async function loadCatalog() {
+        try {
+            const [creators, courses] = await Promise.all([
+                request("/api/creators"),
+                request("/api/courses")
+            ]);
+            state.creators = creators;
+            state.courses = courses;
+            await refreshAllSalesForIds();
+            resetIds();
+            updateServerStatus("온라인", "online");
+            renderCatalog();
+        } catch (error) {
+            updateServerStatus("오프라인", "offline");
+            $("#catalogMetrics").replaceChildren(
+                    countMetric("크리에이터", 0, "명"),
+                    countMetric("강의", 0, "개"),
+                    countMetric("판매", 0, "건"),
+                    countMetric("취소", 0, "건")
+            );
+            writeOutput($("#queryOutput"), error.body || error.message, true);
+        }
+    }
+
+    async function createSale(event) {
+        event.preventDefault();
+        const form = event.currentTarget;
+        const payload = {
+            id: formValue(form, "id"),
+            courseId: $("#courseSelect").value,
+            studentId: formValue(form, "studentId"),
+            amount: Number(formValue(form, "amount")),
+            paidAt: formValue(form, "paidAt")
+        };
+
+        try {
+            const result = await request("/api/sales", {
+                method: "POST",
+                body: JSON.stringify(payload)
+            });
+            writeOutput($("#saleOutput"), result);
+            $("#cancelForm [name='saleId']").value = result.id;
+            await refreshAllSalesForIds();
+            renderCatalog($("#creatorSelect").value);
+            resetIds();
+            resetCurrentTimes();
+            await loadSales();
+            await loadMonthly();
+        } catch (error) {
+            writeOutput($("#saleOutput"), error.body || error.message, true);
+        }
+    }
+
+    async function createCancellation(event) {
+        event.preventDefault();
+        const form = event.currentTarget;
+        const saleId = formValue(form, "saleId");
+        const payload = {
+            id: formValue(form, "id"),
+            refundAmount: Number(formValue(form, "refundAmount")),
+            cancelledAt: formValue(form, "cancelledAt")
+        };
+
+        try {
+            const result = await request(`/api/sales/${encodeURIComponent(saleId)}/cancellations`, {
+                method: "POST",
+                body: JSON.stringify(payload)
+            });
+            writeOutput($("#cancelOutput"), result);
+            await refreshAllSalesForIds();
+            renderCatalog($("#creatorSelect").value);
+            resetIds();
+            resetCurrentTimes();
+            await loadSales();
+            await loadMonthly();
+        } catch (error) {
+            writeOutput($("#cancelOutput"), error.body || error.message, true);
+        }
+    }
+
+    async function loadMonthly(event) {
+        event?.preventDefault();
+        const form = $("#monthlyForm");
+        const creatorId = currentCreatorId();
+        const yearMonth = formValue(form, "yearMonth");
+
+        try {
+            const result = await request(`/api/settlements/monthly?creatorId=${encodeURIComponent(creatorId)}&yearMonth=${encodeURIComponent(yearMonth)}`);
+            renderSummary($("#monthlySummary"), [
+                ["총 판매", result.totalSaleAmount],
+                ["환불", result.refundAmount],
+                ["수수료", result.platformFeeAmount],
+                ["정산 예정", result.scheduledSettlementAmount]
+            ]);
+            writeOutput($("#monthlyOutput"), result);
+        } catch (error) {
+            renderSummary($("#monthlySummary"), []);
+            writeOutput($("#monthlyOutput"), error.body || error.message, true);
+        }
+    }
+
+    async function loadSales() {
+        setSalesMonth($("#salesYearMonth").value);
+        const creatorId = currentCreatorId() || "creator-1";
+        const fromDate = $("#salesFromDate").value.trim();
+        const toDate = $("#salesToDate").value.trim();
+        const params = new URLSearchParams({ creatorId });
+        if (fromDate) params.set("fromDate", fromDate);
+        if (toDate) params.set("toDate", toDate);
+
+        try {
+            const result = await request(`/api/sales?${params}`);
+            state.sales = result.items;
+            renderSaleSelect();
+
+            const rows = result.items.length === 0
+                    ? [emptyRow("조건에 맞는 판매 없음")]
+                    : result.items.map((item) => {
+                        const row = document.createElement("div");
+                        row.className = "row";
+                        const text = document.createElement("div");
+                        const title = document.createElement("div");
+                        title.className = "row-title";
+                        title.textContent = `${item.courseTitle} · ${money.format(item.amount)}원`;
+                        const sub = document.createElement("div");
+                        sub.className = "row-sub";
+                        sub.textContent = `${item.id} / ${item.studentId} / 환불 ${money.format(item.refundedAmount)}원 / 잔액 ${money.format(item.remainingAmount)}원`;
+                        text.append(title, sub);
+                        const pill = document.createElement("div");
+                        pill.className = "pill";
+                        pill.textContent = item.saleStatus;
+                        row.append(text, pill);
+                        return row;
+                    });
+
+            $("#salesList").replaceChildren(...rows);
+            writeOutput($("#queryOutput"), result);
+        } catch (error) {
+            state.sales = [];
+            renderSaleSelect();
+            $("#salesList").replaceChildren(emptyRow("조회 실패"));
+            writeOutput($("#queryOutput"), error.body || error.message, true);
+        }
+    }
+
+    async function loadAdmin() {
+        setSalesMonth($("#salesYearMonth").value);
+        const startDate = $("#salesFromDate").value.trim() || "2025-03-01";
+        const endDate = $("#salesToDate").value.trim() || "2025-03-31";
+
+        try {
+            const result = await request(`/api/admin/settlements?startDate=${encodeURIComponent(startDate)}&endDate=${encodeURIComponent(endDate)}`);
+            renderSummary($("#adminSummary"), [
+                ["전체 판매", result.totalSaleAmount],
+                ["전체 환불", result.totalRefundAmount],
+                ["전체 수수료", result.totalPlatformFeeAmount],
+                ["전체 정산", result.totalScheduledSettlementAmount]
+            ]);
+
+            $("#salesList").replaceChildren(...result.creatorSettlements.map((creator) => {
+                const row = document.createElement("div");
+                row.className = "row";
+                const text = document.createElement("div");
+                const title = document.createElement("div");
+                title.className = "row-title";
+                title.textContent = `${creator.creatorName} · ${money.format(creator.scheduledSettlementAmount)}원`;
+                const sub = document.createElement("div");
+                sub.className = "row-sub";
+                sub.textContent = `판매 ${money.format(creator.totalSaleAmount)}원 / 환불 ${money.format(creator.refundAmount)}원 / 수수료 ${money.format(creator.platformFeeAmount)}원`;
+                text.append(title, sub);
+                const pill = document.createElement("div");
+                pill.className = "pill";
+                pill.textContent = creator.creatorId;
+                row.append(text, pill);
+                return row;
+            }));
+            writeOutput($("#queryOutput"), result);
+        } catch (error) {
+            renderSummary($("#adminSummary"), []);
+            writeOutput($("#queryOutput"), error.body || error.message, true);
+        }
+    }
+
+    function focusSection(sectionId) {
+        document.getElementById(sectionId)?.scrollIntoView({ behavior: "smooth", block: "start" });
+    }
+
+    $("#creatorSelect").addEventListener("change", async () => {
+        const creatorId = $("#creatorSelect").value;
+        renderCatalog(creatorId);
+        state.sales = [];
+        renderSaleSelect();
+        await loadMonthly();
+        await loadSales();
+    });
+
+    $("#saleSelect").addEventListener("change", () => {
+        $("#cancelForm [name='saleId']").value = $("#saleSelect").value;
+    });
+
+    $("#applySaleToCancel").addEventListener("click", () => {
+        $("#cancelForm [name='saleId']").value = $("#saleSelect").value;
+    });
+
+    $("#refreshCatalog").addEventListener("click", loadCatalog);
+    $("#saleForm").addEventListener("submit", createSale);
+    $("#cancelForm").addEventListener("submit", createCancellation);
+    $("#monthlyForm").addEventListener("submit", loadMonthly);
+    $("#loadSales").addEventListener("click", loadSales);
+    $("#loadAdmin").addEventListener("click", loadAdmin);
+    $("#salesYearMonth").addEventListener("change", () => {
+        setSalesMonth($("#salesYearMonth").value);
+    });
+
+    document.querySelectorAll("[data-demo]").forEach((button) => {
+        button.addEventListener("click", () => {
+            const demo = button.dataset.demo;
+            const target = button.dataset.target;
+            if (target) {
+                focusSection(target);
+            }
+            if (demo === "sales") loadSales();
+            if (demo === "monthly") loadMonthly();
+            if (demo === "admin") loadAdmin();
+        });
+    });
+
+    setSelectPlaceholder($("#saleSelect"), "판매 조회 결과 없음");
+    setSalesMonth($("#salesYearMonth").value);
+    renderScenarioList();
+    resetCurrentTimes();
+    loadCatalog().then(() => {
+        if (state.creators.length > 0) {
+            loadMonthly();
+            loadSales();
+        }
+    });
+</script>
+</body>
+</html>
