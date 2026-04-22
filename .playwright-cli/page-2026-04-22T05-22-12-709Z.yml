@@ -1,0 +1,91 @@
+- main [ref=e2]:
+  - generic [ref=e3]:
+    - generic [ref=e4]:
+      - generic [ref=e5]: Creator Settlement API
+      - heading "과제 제출 콘솔" [level=1] [ref=e6]
+      - generic [ref=e7]: 자동 시드 데이터와 API 응답을 바로 확인
+    - generic [ref=e8]:
+      - generic [ref=e9]:
+        - generic [ref=e10]: Server
+        - generic [ref=e11]: 확인 중
+      - generic [ref=e12]:
+        - button "판매 조회" [ref=e13] [cursor=pointer]
+        - button "월 정산" [ref=e14] [cursor=pointer]
+        - button "운영 집계" [ref=e15] [cursor=pointer]
+  - generic [ref=e16]:
+    - article [ref=e17]:
+      - heading "기준 데이터" [level=2] [ref=e18]
+      - generic [ref=e19]:
+        - generic [ref=e20]:
+          - text: 크리에이터
+          - combobox "크리에이터" [ref=e21]
+        - generic [ref=e22]:
+          - text: 강의
+          - combobox "강의" [ref=e23]
+        - generic [ref=e24]:
+          - text: 판매 선택
+          - combobox "판매 선택" [disabled] [ref=e25]:
+            - option "판매 조회 결과 없음" [disabled] [selected]
+        - button "선택 판매를 취소 폼에 반영" [ref=e26] [cursor=pointer]
+        - button "목록 새로고침" [ref=e27] [cursor=pointer]
+    - article [ref=e28]:
+      - heading "판매 등록" [level=2] [ref=e29]
+      - generic [ref=e30]:
+        - generic [ref=e31]:
+          - text: 판매 ID
+          - textbox "판매 ID" [ref=e32]: sale-extra-1
+        - generic [ref=e33]:
+          - text: 학생 ID
+          - textbox "학생 ID" [ref=e34]: student-99
+        - generic [ref=e35]:
+          - text: 금액
+          - spinbutton "금액" [ref=e36]: "70000"
+        - generic [ref=e37]:
+          - text: 결제 일시
+          - textbox "결제 일시" [ref=e38]:
+            - /placeholder: 현재 시간이 자동 입력됩니다
+            - text: 2026-04-22T14:22:12+09:00
+        - button "판매 등록" [ref=e39] [cursor=pointer]
+      - generic [ref=e40]: POST /api/sales 결과가 여기에 표시됩니다.
+    - article [ref=e41]:
+      - heading "취소 등록" [level=2] [ref=e42]
+      - generic [ref=e43]:
+        - generic [ref=e44]:
+          - text: 판매 ID
+          - textbox "판매 ID" [ref=e45]: sale-extra-1
+        - generic [ref=e46]:
+          - text: 취소 ID
+          - textbox "취소 ID" [ref=e47]: cancel-extra-1
+        - generic [ref=e48]:
+          - text: 환불 금액
+          - spinbutton "환불 금액" [ref=e49]: "10000"
+        - generic [ref=e50]:
+          - text: 취소 일시
+          - textbox "취소 일시" [ref=e51]:
+            - /placeholder: 현재 시간이 자동 입력됩니다
+            - text: 2026-04-22T14:22:12+09:00
+        - button "취소 등록" [ref=e52] [cursor=pointer]
+      - generic [ref=e53]: "POST /api/sales/{saleId}/cancellations 결과가 여기에 표시됩니다."
+    - article [ref=e54]:
+      - heading "월별 정산" [level=2] [ref=e55]
+      - generic [ref=e56]:
+        - generic [ref=e57]:
+          - text: 크리에이터
+          - combobox "크리에이터" [ref=e58]
+        - generic [ref=e59]:
+          - text: 정산 월
+          - textbox "정산 월" [ref=e60]: 2025-03
+        - button "월 정산 조회" [ref=e61] [cursor=pointer]
+      - generic [ref=e62]: GET /api/settlements/monthly 결과가 여기에 표시됩니다.
+    - article [ref=e63]:
+      - heading "판매 내역 / 운영자 집계" [level=2] [ref=e64]
+      - generic [ref=e65]:
+        - generic [ref=e66]:
+          - text: 판매 조회 시작일
+          - textbox "판매 조회 시작일" [ref=e67]: 2025-03-01
+        - generic [ref=e68]:
+          - text: 판매 조회 종료일
+          - textbox "판매 조회 종료일" [ref=e69]: 2025-03-31
+        - button "선택 크리에이터 판매 조회" [ref=e70] [cursor=pointer]
+        - button "운영자 집계 조회" [ref=e71] [cursor=pointer]
+      - generic [ref=e72]: 조회 결과가 여기에 표시됩니다.
